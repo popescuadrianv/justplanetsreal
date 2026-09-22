@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; background: #010101; }
+  * { box-sizing: border-box; }
+  a { color: #f6ece1; text-decoration: none; }
+  a:hover { color: #ffffff; }
+  @keyframes drift-a {
+    0%, 100% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-50%, -50%) translate(18px, -34px) rotate(1.2deg); }
+    50% { transform: translate(-50%, -50%) translate(-14px, -52px) rotate(-0.8deg); }
+    75% { transform: translate(-50%, -50%) translate(-26px, -20px) rotate(0.6deg); }
+  }
+  @keyframes drift-b {
+    0%, 100% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+    30% { transform: translate(-50%, -50%) translate(-24px, 40px) rotate(-1.1deg); }
+    60% { transform: translate(-50%, -50%) translate(22px, 56px) rotate(1deg); }
+    82% { transform: translate(-50%, -50%) translate(30px, 16px) rotate(0.4deg); }
+  }
+  @keyframes drift-c {
+    0%, 100% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+    28% { transform: translate(-50%, -50%) translate(26px, 24px) rotate(0.9deg); }
+    55% { transform: translate(-50%, -50%) translate(-18px, 44px) rotate(-1.3deg); }
+    80% { transform: translate(-50%, -50%) translate(-30px, 12px) rotate(0.5deg); }
+  }
+  @keyframes float-l {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(34px, -26px) rotate(1.4deg); }
+    66% { transform: translate(12px, -46px) rotate(-1deg); }
+  }
+  @keyframes float-r {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    35% { transform: translate(-30px, -34px) rotate(-1.2deg); }
+    70% { transform: translate(-8px, -14px) rotate(0.9deg); }
+  }
+  @keyframes cue { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="position: relative; height: 100svh; min-height: 440px; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; background: #010101; font-family: 'TAN Variety', 'Space Mono', monospace; color: #f6ece1;">
+
+  <canvas ref="{{ starRef }}" style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block;"></canvas>
+  <canvas ref="{{ shootRef }}" style="position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; pointer-events: none;"></canvas>
+
+  
+
+  <div ref="{{ wrapRef }}" style="position: relative; z-index: 1;">
+    <canvas ref="{{ heroBackRef }}" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; display: block;"></canvas>
+
+    <section id="core" data-screen-label="01 Core" style="position: relative; z-index: 2; min-height: 100svh;">
+      <div style="position: absolute; left: 22.4%; top: 25.6%; width: 20%; min-width: 120px; transform: translate(-50%, -50%); animation: drift-a 16s ease-in-out infinite;">
+        <img data-occluder="" src="assets/archie.png" alt="Archie" style="display: block; width: 100%; height: auto;">
+      </div>
+      <div style="position: absolute; left: 49.4%; top: 49.4%; width: 23.5%; min-width: 140px; transform: translate(-50%, -50%); animation: drift-b 22s ease-in-out infinite;">
+        <img data-occluder="" src="assets/gaulle.png" alt="Gaulle" style="display: block; width: 100%; height: auto;">
+      </div>
+      <div style="position: absolute; left: 79.4%; top: 74.7%; width: 21.5%; min-width: 130px; transform: translate(-50%, -50%); animation: drift-a 19s ease-in-out infinite;">
+        <img data-occluder="" src="assets/zoe.png" alt="Zoe" style="display: block; width: 100%; height: auto;">
+      </div>
+
+      <div style="position: absolute; left: 50%; top: 79%; transform: translate(-50%, -8%); z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+        <h1 style="margin: 0; width: clamp(230px, 30vw, 440px); display: flex;"><img src="assets/logo-text.svg" alt="just planets" style="display: block; width: 100%; height: auto;"></h1>
+        <a href="#explore" style="display: flex; flex-direction: column; align-items: center; gap: 12px; animation: cue 3.4s ease-in-out infinite;">
+          <span style="font-size: 16px; line-height: 1; color: rgba(253,247,240,0.85);">↓</span>
+          <span style="font-size: 10px; letter-spacing: 0.34em; color: rgba(253,247,240,0.7); text-align: center;">SCROLL</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="explore" data-screen-label="02 Explore" style="position: relative; z-index: 2; min-height: 100svh;">
+      <sc-for list="{{ orbs }}" as="o" hint-placeholder-count="0">
+        <div style="position: absolute; left: {{ o.left }}; top: {{ o.top }}; width: {{ o.width }}; min-width: 54px; z-index: 3; opacity: {{ o.op }}; transform: {{ o.tf }}; pointer-events: none;">
+          <div style="position: absolute; left: 12%; top: 12%; width: 76%; height: 76%; border-radius: 50%; border: 1px solid rgba(255,222,170,0.5); opacity: {{ o.ring }}; transition: opacity 0.5s;"></div>
+          <img src="{{ o.src }}" alt="{{ o.name }}" style="display: block; width: 100%; height: auto; filter: {{ o.fx }}; transform: {{ o.spin }};">
+          <span style="position: absolute; left: 50%; top: 89%; transform: translate(-50%, 0.9em); white-space: nowrap; font-size: 10px; letter-spacing: 0.22em; color: #ffdeaa; opacity: {{ o.ring }}; transition: opacity 0.5s;">{{ o.tag }}</span>
+        </div>
+      </sc-for>
+
+      <div style="position: absolute; left: 5%; top: 12%; width: 32%; max-width: 360px; z-index: 5; display: {{ introDisp }}; flex-direction: column; gap: clamp(9px, 1.7vh, 16px); opacity: {{ introOp }}; transition: opacity 0.45s;">
+        <p style="margin: 0; font-size: 11px; line-height: 1.85; color: rgba(253,247,240,0.82); text-wrap: pretty; text-shadow: 0 2px 18px rgba(2,2,4,0.95);"><strong style="font-weight: 400; color: #fdf7f0;">just planets</strong> is a way of escaping the ordinary by choosing the planet that resonates the most with u. You can experience the emotion of the planet that you brought into your life in many ways: on your own skin by wearing it, in your home with a print on the wall, or on your belongings through stickers. The possibilities are endless.</p>
+        <p style="margin: 0; font-size: 10px; line-height: 1.9; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(253,247,240,0.62); text-shadow: 0 2px 18px rgba(2,2,4,0.95);">Explore through the void and find your own planet.</p>
+      </div>
+
+      <div style="position: absolute; left: {{ copyL }}; top: {{ copyT }}; transform: {{ copyTf }}; width: 27%; min-width: 206px; max-width: 320px; z-index: 5; display: flex; flex-direction: column; gap: 11px; opacity: {{ textOn }}; pointer-events: {{ textEv }};">
+        <div style="display: flex; align-items: center; gap: 14px; font-size: 10px; letter-spacing: 0.28em; color: rgba(253,247,240,0.6);">
+          <span>{{ selNum }}</span>
+          <span style="width: 34px; height: 1px; background: rgba(253,247,240,0.35);"></span>
+        </div>
+        <h2 style="margin: 0; font-family: 'Awesome Lathusca', 'Baloo 2', sans-serif; font-size: clamp(22px, 2.1vw, 34px); font-weight: 700; letter-spacing: 0.06em; color: #fdf7f0; line-height: 1; text-shadow: 0 2px 20px rgba(2,2,4,0.95);">{{ selName }}</h2>
+        <p data-copy-scroll="" style="margin: 0; max-height: 44vh; overflow-y: auto; font-size: 10px; line-height: 1.65; color: #f1eae1; text-wrap: pretty; text-shadow: 0 2px 16px rgba(2,2,4,0.98);">{{ selBody }}</p>
+        <a href="#bigbang" style="display: flex; flex-direction: column; gap: 10px; font-size: 10px; letter-spacing: 0.3em; color: rgba(253,247,240,0.75); max-width: 160px; text-shadow: 0 2px 16px rgba(2,2,4,0.95);" style-hover="color: #ffffff;">
+          VIEW MORE
+          <span style="height: 1px; width: 100%; background: rgba(253,247,240,0.4);"></span>
+        </a>
+      </div>
+
+      <div style="position: absolute; bottom: 26px; left: 0; right: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 0 5%; font-size: 10px; letter-spacing: 0.28em; color: rgba(253,247,240,0.55); opacity: {{ textOn }}; transition: opacity 0.6s;">
+        <span>JUST PLANETS</span>
+        <div style="flex: 1 1 auto; display: flex; align-items: center; gap: 14px; max-width: 320px;">
+          <span style="white-space: nowrap;">{{ seen }} / {{ total }}</span>
+          <span style="flex: 1 1 auto; height: 1px; background: rgba(253,247,240,0.22);"><span style="display: block; height: 1px; width: {{ progW }}; background: rgba(255,222,170,0.9);"></span></span>
+        </div>
+        <a href="#bigbang" style="display: flex; align-items: center; gap: 14px; color: rgba(253,247,240,0.55);" style-hover="color: #ffffff;"><span style="width: 26px; height: 1px; background: rgba(253,247,240,0.5);"></span>SCROLL</a>
+      </div>
+    </section>
+
+    <canvas ref="{{ heroFrontRef }}" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; display: block; pointer-events: none;"></canvas>
+
+    <div style="position: absolute; inset: 0; z-index: 9; pointer-events: none; opacity: {{ editVis }}; left: -138px; top: -18px">
+      <sc-for list="{{ handles }}" as="h" hint-placeholder-count="0">
+        <div onPointerDown="{{ h.down }}" style="position: absolute; left: {{ h.left }}; top: {{ h.top }}; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 1.5px solid #ffd79a; background: rgba(255,215,154,0.3); cursor: grab; pointer-events: {{ editOn }};"></div>
+      </sc-for>
+      <div style="position: fixed; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 4px; background: rgba(16,14,12,0.92); border: 1px solid rgba(255,215,154,0.35); font-size: 10px; letter-spacing: 0.18em; color: rgba(253,247,240,0.8); pointer-events: {{ editOn }};">
+        <span>DRAG · ALT-CLICK ADDS · SHIFT-CLICK REMOVES</span>
+        <button type="button" onClick="{{ onCopy }}" style="border: 1px solid rgba(255,215,154,0.5); background: none; color: #ffd79a; font-size: 10px; letter-spacing: 0.18em; padding: 5px 10px; cursor: pointer;">COPY</button>
+        <button type="button" onClick="{{ onReset }}" style="border: 1px solid rgba(253,247,240,0.3); background: none; color: rgba(253,247,240,0.7); font-size: 10px; letter-spacing: 0.18em; padding: 5px 10px; cursor: pointer;">RESET</button>
+      </div>
+</div>
+  </div>
+
+
+  <section id="bigbang" data-screen-label="03 The Big Bang" style="position: relative; z-index: 1; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 96px 6% 76px;">
+    <div style="position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: max(100%, calc(100svh * 16 / 9)); z-index: 0; pointer-events: none;">
+      <img src="assets/nebula-mock.png" alt="" style="display: block; width: 100%; height: auto; mix-blend-mode: screen;">
+    </div>
+
+    <div style="position: absolute; left: -8%; bottom: -14%; width: 26%; min-width: 150px; z-index: 1; opacity: 0.85; animation: float-l 26s ease-in-out infinite;">
+      <img src="assets/gaulle.png" alt="" style="display: block; width: 100%; height: auto;">
+    </div>
+    <div style="position: absolute; right: -10%; bottom: -18%; width: 28%; min-width: 160px; z-index: 1; opacity: 0.85; animation: float-r 31s ease-in-out infinite;">
+      <img src="assets/archie.png" alt="" style="display: block; width: 100%; height: auto;">
+    </div>
+
+    <div style="position: relative; z-index: 3; max-width: 860px; width: 100%; display: flex; flex-direction: column; gap: clamp(12px, 2.6vh, 26px); text-align: center; margin-top: 32vh;">
+      <p style="margin: 0; font-size: clamp(11px, 1.05vw, 14px); line-height: 1.9; letter-spacing: 0.16em; text-transform: uppercase; color: #fdf7f0; text-wrap: pretty;">I never felt like I belonged anywhere, so I’ve created my own planets</p>
+      <p style="margin: 0; font-size: clamp(11px, 1.05vw, 14px); line-height: 1.9; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(253,247,240,0.88); text-wrap: pretty;">Using just a pair of binoculars I started exploring life in detail, focusing on colors, textures, shades and shadows</p>
+      <p style="margin: 0; font-size: clamp(11px, 1.05vw, 14px); line-height: 1.9; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(253,247,240,0.88); text-wrap: pretty;">Each planet represent a specific part of the world around us (an object, the nature, animals or humans) and embodies a specific emotion / feeling / state of mind.</p>
+      <p style="margin: 0; font-size: clamp(11px, 1.05vw, 14px); line-height: 1.9; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(253,247,240,0.88); text-wrap: pretty;">Feel free to explore this endless galaxy and find your own planet. The one that you identify with. Make it yours.</p>
+      <p style="margin: 0; font-size: clamp(11px, 1.05vw, 14px); line-height: 2; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(253,247,240,0.72);">Lose yourself to find yourself</p>
+      <p style="margin: 0; font-size: clamp(10px, 0.9vw, 12px); line-height: 2; letter-spacing: 0.28em; color: rgba(253,247,240,0.45);">.42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42.</p>
+    </div>
+
+    <div style="position: relative; z-index: 3; margin-top: auto; margin-bottom: 4px; display: flex; flex-direction: column; align-items: center; gap: 18px;">
+      <img src="assets/logo-text.svg" alt="just planets" style="display: block; width: clamp(220px, 30vw, 460px); height: auto;">
+    </div>
+
+    <div style="position: relative; z-index: 4; width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 10px; letter-spacing: 0.28em; color: rgba(253,247,240,0.55);">
+      <span>JUST PLANETS</span>
+      <a href="#exhibit" style="display: flex; align-items: center; gap: 14px; color: rgba(253,247,240,0.55);" style-hover="color: #ffffff;"><span style="width: 26px; height: 1px; background: rgba(253,247,240,0.5);"></span>SCROLL</a>
+    </div>
+  </section>
+
+  <section id="exhibit" data-screen-label="04 Exhibit" style="position: relative; z-index: 1; min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 104px 3.5% 90px;">
+    <div style="position: relative; z-index: 2; width: 100%; max-width: 1840px; display: flex; flex-wrap: wrap; gap: 36px;">
+      <div style="flex: 0 1 186px; min-width: 170px; display: flex; flex-direction: column; gap: 24px;">
+        <h2 style="margin: 0; font-family: 'Awesome Lathusca', 'Baloo 2', sans-serif; font-size: clamp(22px, 2vw, 32px); font-weight: 400; letter-spacing: 0.2em; color: #fdf7f0;">EXHIBIT</h2>
+        <p style="margin: 0; font-size: 12px; line-height: 1.9; color: rgba(253,247,240,0.85);">Just a glimpse of the planets displayed through ordinary means.</p>
+        <span style="width: 30px; height: 1px; background: rgba(253,247,240,0.4);"></span>
+        <span style="font-size: 11px; letter-spacing: 0.24em; color: rgba(253,247,240,0.6);">2021 — ∞</span>
+      </div>
+
+      <div style="flex: 1 1 620px; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; align-items: start;">
+        <div style="aspect-ratio: 3 / 4.6; grid-row: span 2; overflow: hidden;"><img src="assets/ex/e1.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.2; overflow: hidden;"><img src="assets/ex/e2.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.4; overflow: hidden;"><img src="assets/ex/e3.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 4.6; grid-row: span 2; overflow: hidden;"><img src="assets/ex/e4.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.2; overflow: hidden;"><img src="assets/ex/e5.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.4; overflow: hidden;"><img src="assets/ex/e6.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.4; overflow: hidden;"><img src="assets/ex/e7.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+        <div style="aspect-ratio: 3 / 2.2; overflow: hidden;"><img src="assets/ex/e8.png" alt="" loading="lazy" style="display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" style-hover="transform: scale(1.04);"></div>
+      </div>
+    </div>
+
+    <div style="position: absolute; bottom: 26px; left: 0; right: 0; z-index: 4; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; font-size: 10px; letter-spacing: 0.28em; color: rgba(253,247,240,0.55);">
+      <span>JUST PLANETS</span>
+      <a href="#reach" style="display: flex; align-items: center; gap: 14px; color: rgba(253,247,240,0.55);" style-hover="color: #ffffff;"><span style="width: 26px; height: 1px; background: rgba(253,247,240,0.5);"></span>SCROLL</a>
+    </div>
+  </section>
+
+  <section id="reach" data-screen-label="05 Reach Out" style="position: relative; z-index: 1; min-height: 100svh; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 120px 6% 96px;">
+    <div style="position: absolute; right: -16%; top: -22%; width: 46%; min-width: 260px; z-index: 1; opacity: 0.9;">
+      <img src="assets/archie.png" alt="" style="display: block; width: 100%; height: auto; filter: blur(1px);">
+    </div>
+    <div style="position: absolute; left: 7%; top: 45%; width: 9%; min-width: 62px; z-index: 1; animation: bob 18s ease-in-out infinite;">
+      <img src="assets/zoe.png" alt="" style="display: block; width: 100%; height: auto;">
+    </div>
+
+    <div style="position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
+      <span style="font-size: clamp(11px, 1vw, 13px); letter-spacing: 0.26em; color: rgba(253,247,240,0.85);">DROP YOUR SIGNAL INTO THE</span>
+      <a href="mailto:void@justplanets.art" style="font-family: 'Awesome Lathusca', 'Baloo 2', sans-serif; font-weight: 700; font-size: clamp(24px, 3.8vw, 58px); letter-spacing: 0.02em; color: #fdf7f0; text-shadow: 0 0 26px rgba(255,240,220,0.35); word-break: break-word;" style-hover="text-shadow: 0 0 40px rgba(255,240,220,0.6);">void@justplanets.art</a>
+    </div>
+
+    <div style="position: absolute; bottom: 24px; left: 5%; z-index: 4; width: clamp(64px, 6vw, 88px);">
+      <img src="assets/logo-symbol.svg" alt="Just Planets" style="display: block; width: 100%; height: auto;">
+    </div>
+    <div style="position: absolute; bottom: 30px; right: 5%; z-index: 4; font-size: 10px; letter-spacing: 0.26em; color: rgba(253,247,240,0.55);">@justplanets 2026</div>
+  </section>
+  <nav style="position: fixed; top: 26px; left: 0; right: 0; z-index: 30; display: flex; justify-content: center; align-items: flex-start; gap: clamp(16px, 3vw, 44px); padding: 0 5%; flex-wrap: wrap;">
+    <a href="#core" style="display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; color: {{ c0 }};" style-hover="color: #ffffff;">CORE<span style="width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: {{ d0 }};"></span></a>
+    <a href="#explore" style="display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; color: {{ c1 }};" style-hover="color: #ffffff;">EXPLORE<span style="width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: {{ d1 }};"></span></a>
+    <a href="#bigbang" style="display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; color: {{ c2 }};" style-hover="color: #ffffff;">THE BIG BANG<span style="width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: {{ d2 }};"></span></a>
+    <a href="#exhibit" style="display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; color: {{ c3 }};" style-hover="color: #ffffff;">EXHIBIT<span style="width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: {{ d3 }};"></span></a>
+    <a href="#reach" style="display: flex; flex-direction: column; align-items: center; gap: 9px; font-size: 11px; letter-spacing: 0.26em; white-space: nowrap; color: {{ c4 }};" style-hover="color: #ffffff;">REACH OUT<span style="width: 4px; height: 4px; border-radius: 50%; background: #fff; opacity: {{ d4 }};"></span></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;editTrail&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Trail&quot;},&quot;trailIntensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.35,&quot;min&quot;:0.15,&quot;max&quot;:1.8,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Trail&quot;},&quot;showMoons&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Trail&quot;},&quot;starDensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.4,&quot;min&quot;:0.2,&quot;max&quot;:2,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Space&quot;}}">
+const PASTEL = ["#ee3939","#fffbac","#5aebf0","#9fffb0","#c4a1f7","#ffabdf","#ffb27d"];
+const ALL = [["01","REDDIE","1-reddie","16 MAY 2020","Almost fully covered with active vulcanoes, Reddie symbolizes fear."],["02","YELLA","2-yella","17 MAY 2020","Entirely covered by rapeseed fields, with plenty of bees, Yella symbolizes joy and patience."],["03","BLOO","3-bloo","17 MAY 2020","Bloo is a huge cold water planet, with billions of species of animals, that symbolizes loneliness and productivity."],["04","SISI","4-sisi","17 MAY 2020","The surface of the planet has 70% water and 30% land (beaches). Sisi symbolizes tranquility."],["05","CANE","5-cane","17 MAY 2020","The giant gas planet Cane symbolizes the temptation."],["06","KAY","6-kay","17 MAY 2020","Kay's surface is mostly covered by mud and quicksands, symbolizing the panic."],["07","GUMBO","7-gumbo","17 MAY 2020","Gumbo is a tiny planet, made from multiple types of gases, which symbolizes innocence."],["08","PEARL","8-pearl","17 MAY 2020","The planet surface is destroyed by the constant acid rain, caused by unknown chemical reactions. Pearl symbolizes depression and madness."],["09","RUMBO","9-rumbo","17 MAY 2020","Rumbo is Gumbo's sister planet, made from less types of gases, but bigger. It symbolizes apathy."],["10","LUSHY","10-lushy","18 MAY 2020","Covered only in diamonds, Lushy is one of the most special planets in my system. Here time is perceived differently than we know it. You have full control over your Time. It becomes infinite only when you use it wisely. When used foolishly, it shrinks and starts to control your life. You don't really want that, so make sure you're the one in control. Lushy is the symbol of luxury and fantasy."],["11","AURORA","11-aurora","18 MAY 2020","Tropical forests, rivers and oceans are predominant on this planet. There is only one season, similar to Earth's spring. Aurora symbolizes freshness."],["12","GRETA","12-greta","20 MAY 2020","Made only of toxic gases, Greta represents the nausea."],["14","SID","14-sid","26 MAY 2020","Sid is one tiny frozen planet that represents regret."],["15","BEANIE","15-beanie","27 MAY 2020","The highest mountain on Beanie exceeds 21 000 meters. The planet's surface represents really high mountain ranges accompanied by a steady winter. Beanie symbolizes melancholy."],["17","DASH","17-dash","12 JUNE 2020","The planet that used to be an ocean a few million years ago, now it's a desert. The high temperatures caused by a star in its galaxy made this change possible. Dash symbolizes boredom."],["18","KLAY","18-klay","14 JUNE 2020","Klay has two seasons: a rainy one and a dry one. The clay fields that cover the planet's surface represent creativity."],["19","LAGUNA","19-laguna","21 JUNE 2020","The mountains and seas on Laguna created thousands of beautiful lagoons and cliffs, during the years. The planet represents the expectations."],["20","MANGO","20-mango","22 JUNE 2020","Similar to Earth, Mango has many different surfaces, such as oceans, forests, fields and mountains. Life is also present here, but because of the climate (strong winds, extreme temperatures), the creatures are very different, compared with the ones we know. Mango symbolizes the variety."],["21","NANCY","21-nancy","28 JUNE 2020","This planet's colour is never the same, because of the combination of gases that create colorful clouds. Nancy symbolizes the doubt."],["22","ARCHIE","22-archie","4 JULY 2020","This planet's temperature is never pleasant. It's either too hot because of the lava, or too cold because of the ice. Archie represents the frustration."],["23","ZOE","23-zoe","8 JULY 2020","The planet is surrounded by a huge ocean full of certain chemicals which, once transformed into clouds, create different colors. You can say they look beautiful, but they can result into unexpected damaging acid rains. Zoe represents the fear of failure."],["24","JOEY","24-joey","13 JULY 2020","The surface of the planet can be briefly described as \"a big desert crushing into a deep ocean\". Joey is the symbol of infinity."],["31","LIN","31-lin","19 OCTOBER 2020","The planet's surface is covered by dunes of crystal sand. There is no rain, no wind, no earthquakes, so nothing ever moves here. Lin represents the silence."],["32","LOY","32-loy","23 OCTOBER 2020","The planet's surface is fully covered by untouched snow. The temperature is never extreme there and what makes the planet special is the fact that its atmosphere has many layers of gases, that are not allowing any other dust or particle to enter the surface of the planet. If this will ever happen, Loy will be deteriorated and its surface will never be the same. Loy is the symbol of purity."],["33","SUS","33-sus","4 NOVEMBER 2020","The ocean that represents most of the surface of the planet containes phosphor, so the planet becomes active (visually) during the night. Sus is the symbol of missing something or someone."],["34","RENEE","34-renee","29 NOVEMBER 2020","The planet's moisture level is constantly high. That is the reason why the whole surface of Renee is covered by mold. Renee is the symbol of indifference."],["37","LOOP","37-loop","15 JANUARY 2021","Once you spiritually step in Loop, the energy you will feel there will give you the necessary impulse to start working on your tasks. Even though this process might seem frustrating and you will find yourself in a routine, the result is always good, so keep going! Loop symbolizes the struggle."],["38","TED","38-ted","17 JANUARY 2021","Your struggle has a limit, so as you will enter Ted you will feel that all of your energy is gone. Don't be afraid of that, embrace your fatigue and take your time to rest. Smart breaks are the key of becoming successful while staying healthy. Ted is the symbol of being exhausted."],["40","SHIRA","40-shira","31 MARCH 2021","The star that used to provide light and heat for Shira was crashed by an asteroid one night. Since then, the planet's climate has suddenly changed and it marks the beginning of an ice age. Shira represents the change."],["49","FUZZY","49-fuzzy","21 NOVEMBER 2021","uncertainty/hesitation/indecision/chaos/lackofconfidence/creativity/scepticism/doubt/hope/fear/love/lost/unknown/universe/infinite/purity — The symbol of Confusion."],["50","WILSON","50-wilson","23 NOVEMBER 2021","loneliness/thoughts/meditation/patience/understanding/hesitation/alienation/inspiration/acceptance — The symbol of Wisdom."],["51","LAVIE","51-lavie","29 JANUARY 2022","hidden/undefined/unsolved/untold/unnamed/unrevealed/secret/undiscovered/unsure — The symbol of the unknown."],["52","PEEPS","52-peeps","6 FEBRUARY 2022","illness/infection/unhealthy/disease/destructive/harmful/exhausted — Peeps symbolizes the sickness."],["53","YOUSEFF","53-youseff","9 FEBRUARY 2022","cure/remedy/evolution/recover/improvement/repair/relieve — Youseff represents the process of healing."],["54","LUCY","54-lucy","10 FEBRUARY 2022","free/resistant/immune/proof/healthy/safe/protected/secure/lucid/clear — The symbol of immunity."],["55","FRIDA","55-frida","5 JULY 2022","Sometimes you just need to escape from the universe that others have created around you. especially if you don't relate to it. create your own. if that's still not the right one, escape from it again. create a new one. Frida is the symbol of freedom."],["57","SEPP","57-sepp","24 JULY 2022","okay, I get it, Dali, some things might be an illusion for us, but not all of them, obviously. feelings are facts, for example. I know at one point it might seem that you've tricked yourself with what you used to feel, but it's still valid, 'cause you felt it. today I felt anxious. it was surely not an illusion, because I know the reasons, so it's valid. anyway, I embraced it and it left. all good. The symbol of Anxiety."],["58","GAULLE","58-gaulle","2 JANUARY 2023","Sometimes you just need to have a deep conversation with yourself. Could be after a hard moment, after great one or maybe just random, at one point. This planet is an energy, that possesses you when she thinks you need her the most. The purpose of the process is to define/redefine yourself and your inner thoughts/feelings. Make sure you take advantage of this trip and evolve during the process of discovering everything around you. Gaulle is the symbol of Introspection."],["59","LEO","59-leo","7 JANUARY 2023","I spent few hours thinking of the right description for this planet, but none of it seemed to fit perfectly. I just couldn't decide which one was better. Ironically, this planet is the symbol of Confidence, which I was lacking while writing this description. So keep this planet at hand for moments when you just need a boost of confidence to realize that what you're doing is actually great. Just trust your instinct."],["60","DOEI","60-doei","11 JANUARY 2023","Many years ago I found out that Jupiter, Saturn, or any other gas planets have no actual surface. So the concept of trying to \"step foot\" on any of these planets is basically impossible. Since then I just can't stop thinking about the fact that as soon as you would enter their atmosphere, you would find yourself endlessly falling through the void. I wonder how that feels.. Maybe like an endless anxiety, an endless kiss, or like Brancusi's endless column. Doei represents the void."],["61","BUM BEE","61-bum-bee","14 FEBRUARY 2023","I often feel like words are not specific enough to describe certain feelings or moods. Bum Bee represents the idea that you can find more within one thing/person/word/feeling/image than you might see at first. The hidden details behind something simple can turn it into maybe the most complex thing. Bum Bee is the symbol of Profoundness."],["62","HUG","62-hug","29 AUGUST 2023","the feeling of: not being able to express yourself / your heart beating faster than usual / not doing what makes you happy / being in an elevator / telling the hurtful truth / being in a plane while it takes off / not getting enough hours of sleep / a deadline approaching / deciding what to order at a restaurant / not knowing when that last moment will come / knowing that the people are close to you temporary, sometimes / growing up. the symbol of Pressure."]];
+const PLANETS = [
+  { num: '22', name: 'ARCHIE', body: "This planet's temperature is never pleasant. It's either too hot because of the lava, or too cold because of the ice. Archie represents the frustration." },
+  { num: '58', name: 'GAULLE', body: 'Sometimes you just need a deep conversation with yourself. This planet is an energy that possesses you when she thinks you need her the most. Take advantage of the trip and evolve while discovering everything around you. Gaulle is the symbol of introspection.' },
+  { num: '23', name: 'ZOE', body: 'Surrounded by a huge ocean full of chemicals which, once transformed into clouds, create different colours. Beautiful to look at, but they can turn into unexpected, damaging acid rains. Zoe represents the fear of failure.' }
+];
+// resting positions (left %, top %, width %) traced from the mock; slots when one is chosen
+const REST = [[78.5, 34.5, 18.2], [49, 52.5, 19.4], [21.5, 68.5, 19.8]];
+function buildDefaultPath() {
+  const hero = [
+    [0.175, 0.20], [0.115, 0.145], [0.093, 0.10], [0.12, 0.072], [0.175, 0.062], [0.245, 0.08],
+    [0.30, 0.14], [0.345, 0.215], [0.42, 0.26], [0.50, 0.285], [0.58, 0.32], [0.65, 0.38],
+    [0.68, 0.44], [0.66, 0.50], [0.585, 0.545], [0.53, 0.59], [0.535, 0.645], [0.60, 0.70],
+    [0.68, 0.745], [0.78, 0.77], [0.86, 0.80]
+  ].map((p) => [p[0], p[1] * 0.5]);
+  // connector: one long swung hook out toward the right edge and back inward,
+  // carrying the ribbon from the end of Core into the start of Explore
+  const A = [0.86, 0.40], B = [0.60, 0.7225];
+  const C1 = [1.02, 0.505], C2 = [0.905, 0.675];
+  const join = [];
+  for (let k = 1; k < 16; k++) {
+    const t = k / 16, u = 1 - t;
+    const bx = u * u * u * A[0] + 3 * u * u * t * C1[0] + 3 * u * t * t * C2[0] + t * t * t * B[0];
+    const by = u * u * u * A[1] + 3 * u * u * t * C1[1] + 3 * u * t * t * C2[1] + t * t * t * B[1];
+    join.push([bx, by]);
+  }
+  const rest = [[0.60, 0.445], [0.485, 0.515], [0.36, 0.59], [0.235, 0.665], [0.10, 0.745], [-0.04, 0.83]]
+    .map((p) => [p[0], 0.5 + p[1] * 0.5]);
+  return hero.concat(join, rest);
+}
+
+const SLOT = { centre: [43, 47, 28.5], left: [14.5, 59, 13], right: [88, 45, 12.5] };
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      active: null, section: 'core', hov: null, prog: 0,
+      points: buildDefaultPath(), dragging: null
+    };
+    this.wrapRef = React.createRef();
+    this.rootRef = React.createRef();
+    this.starRef = React.createRef();
+    this.shootRef = React.createRef();
+    this.heroBackRef = React.createRef();
+    this.heroFrontRef = React.createRef();
+  }
+
+  renderVals() {
+    const a = this.state.active;
+    const ids = ['core', 'explore', 'bigbang', 'exhibit', 'reach'];
+    const sel = a == null ? PLANETS[0] : PLANETS[a];
+    const out = {
+      rootRef: this.rootRef,
+      starRef: this.starRef,
+      shootRef: this.shootRef,
+      heroBackRef: this.heroBackRef,
+      heroFrontRef: this.heroFrontRef,
+      wrapRef: this.wrapRef,
+      editOn: (this.props.editTrail ?? false) ? 'auto' : 'none',
+      editVis: (this.props.editTrail ?? false) ? 1 : 0,
+      handles: this.state.points.map((p, i) => ({
+        key: 'h' + i,
+        left: (p[0] * 100).toFixed(3) + '%',
+        top: (p[1] * 100).toFixed(3) + '%',
+        down: this.movePoint(i)
+      })),
+      onCopy: () => this.copyPoints(),
+      onReset: () => this.resetPoints(),
+      selNum: sel.num, selName: sel.name, selBody: sel.body,
+      textOn: a == null ? 0 : 1,
+      textEv: a == null ? 'none' : 'auto'
+    };
+    const ax = this.axisSamples();
+    const prog = this.state.prog || 0;
+    // three or four bodies on the axis at once, moving at constant speed through a
+    // receding corridor: apparent size = focal / depth, so they swell at mid-axis
+    // and the same world speed reads as faster there (parallax).
+    const N = 4, CYCLES = ALL.length / N;
+    const Z_NEAR = 1, Z_FAR = 3.1, FOCAL = 28;
+    const orbs = [];
+    let focus = 0, best = 9, focusSlot = 0;
+    for (let i = 0; i < N; i++) {
+      const raw = prog * CYCLES + i / N;
+      const cyc = Math.floor(raw), w = raw - cyc;
+      // constant world speed → non-linear screen travel: slow when far, quick when near
+      const u = Math.min(1, Math.max(0, w - (0.5 * Math.sin(2 * Math.PI * w)) / (2 * Math.PI)));
+      const sp = ax[Math.min(ax.length - 1, Math.round(u * (ax.length - 1)))];
+      const nearness = Math.sin(u * Math.PI);                  // 0 at the ends, 1 mid-axis
+      const depth = 1 - nearness;                              // 0 = closest to the eye
+      const z = Z_NEAR + (Z_FAR - Z_NEAR) * depth;
+      const swing = Math.sin(u * Math.PI * 2 + i * 1.7) * (0.012 + 0.03 * nearness);
+      const x = sp.x + sp.nx * swing;
+      const y = sp.y + sp.ny * swing * 0.5;
+      const idx = (i + cyc * N) % ALL.length;
+      const fade = Math.min(1, Math.min(u / 0.1, (1 - u) / 0.14));
+      if (Math.abs(u - 0.5) < best) { best = Math.abs(u - 0.5); focus = idx; focusSlot = i; }
+      orbs.push({
+        key: 'o' + i,
+        slot: i,
+        left: (x * 100).toFixed(2) + '%',
+        top: ((y - 0.5) * 200).toFixed(2) + '%',
+        width: (FOCAL / z).toFixed(2) + '%',
+        rawOp: Math.max(0, fade),
+        sx: x,
+        sy: (y - 0.5) * 2,
+        tf: 'translate(-50%, -50%)',
+        spin: 'rotate(' + (raw * 34 + i * 23).toFixed(1) + 'deg)',
+        fx: 'blur(' + (depth * 1.5).toFixed(2) + 'px) brightness(' + (0.72 + 0.28 * nearness).toFixed(3) + ')',
+        src: 'assets/pl/' + ALL[idx][2] + '.png',
+        name: ALL[idx][1],
+        tag: ALL[idx][0] + ' · ' + ALL[idx][1]
+      });
+    }
+    // the body nearest the eye is the one the copy describes — ring it, name it,
+    // and hold the others back so the pairing is unmistakable
+    orbs.forEach((o) => {
+      const on = o.slot === focusSlot;
+      // a passing body must not sit on the copy block in the upper-left quadrant
+      o.ring = on ? 1 : 0;
+      o.op = o.rawOp.toFixed(3);
+      delete o.rawOp;
+      delete o.sx;
+      delete o.sy;
+    });
+    out.orbs = orbs;
+    out.selNum = ALL[focus][0];
+    out.selName = ALL[focus][1];
+    out.selBody = ALL[focus][4];
+    out.seen = Math.min(ALL.length, Math.max(1, Math.round(prog * ALL.length)));
+    out.progW = (prog * 100).toFixed(2) + '%';
+    const fo = orbs[focusSlot];
+    const fwPct = parseFloat(fo.width);
+    const fcx = parseFloat(fo.left);
+    const rightSide = fcx < 58;
+    out.copyL = (rightSide ? fcx + fwPct * 0.42 + 2 : fcx - fwPct * 0.42 - 2).toFixed(2) + '%';
+    out.copyT = fo.top;
+    out.copyTf = rightSide ? 'translate(0, -50%)' : 'translate(-100%, -50%)';
+    out.introDisp = prog < 0.12 ? 'flex' : 'none';
+    out.introOp = (prog < 0.05 ? 1 : Math.max(0, (0.12 - prog) / 0.07)).toFixed(2);
+    out.textOn = 1;
+    out.textEv = 'auto';
+    out.total = ALL.length;
+    for (let i = 0; i < ids.length; i++) {
+      const on = this.state.section === ids[i];
+      out['c' + i] = on ? '#ffffff' : 'rgba(246,236,225,0.62)';
+      out['d' + i] = on ? 1 : 0;
+    }
+    return out;
+  }
+
+  // evenly spaced samples (with normals) along the Explore half of the ribbon
+  axisSamples() {
+    const pts = this.state.points.filter((p) => p[1] >= 0.495);
+    if (pts.length < 2) return [{ x: 0.5, y: 0.75, nx: 0, ny: 1 }];
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) {
+      cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], (pts[i][1] - pts[i - 1][1]) * 2));
+    }
+    const L = cum[cum.length - 1] || 1;
+    const M = 160, out = [];
+    for (let k = 0; k < M; k++) {
+      const d = (k / (M - 1)) * L;
+      let i = 1;
+      while (i < cum.length - 1 && cum[i] < d) i++;
+      const seg = Math.max(1e-6, cum[i] - cum[i - 1]);
+      const t = (d - cum[i - 1]) / seg;
+      const dx = pts[i][0] - pts[i - 1][0], dy = (pts[i][1] - pts[i - 1][1]) * 2;
+      const m = Math.hypot(dx, dy) || 1;
+      out.push({
+        x: pts[i - 1][0] + dx * t,
+        y: pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t,
+        nx: -dy / m,
+        ny: dx / m
+      });
+    }
+    return out;
+  }
+
+  componentDidMount() {
+    this._drawnPoints = this.state.points;
+    this.draw();
+    this.startShooting();
+    this._onResize = () => { clearTimeout(this._t); this._t = setTimeout(() => this.draw(), 160); };
+    window.addEventListener('resize', this._onResize);
+
+    // Explore holds the scroll until the whole catalogue has passed the axis
+    this._pinPoint = () => {
+      const el = this.rootRef.current;
+      const ex = el && el.querySelector('#explore');
+      if (!el || !ex) return null;
+      return ex.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop;
+    };
+    this._target = this.state.prog || 0;
+    this._ease = () => {
+      if (this._traf) return;
+      this._traf = requestAnimationFrame(() => {
+        this._traf = 0;
+        const t = this._target, p = this.state.prog;
+        const step = p + (t - p) * 0.14;
+        if (Math.abs(t - step) < 0.0004) { if (p !== t) this.setState({ prog: t }); return; }
+        this.setState({ prog: step });
+        this._ease();
+      });
+    };
+    this._advance = (d, K) => {
+      const el = this.rootRef.current;
+      const pin = this._pinPoint();
+      if (pin == null) return false;
+      const st = el.scrollTop, t = this._target;
+      const down = d > 0;
+      if (down ? (t < 1 && st + d >= pin) : (t > 0 && st + d <= pin)) {
+        el.scrollTop = pin;
+        this._target = Math.max(0, Math.min(1, t + d / K));
+        this._ease();
+        return true;
+      }
+      return false;
+    };
+    this._onWheel = (e) => {
+      const el = this.rootRef.current;
+      if (!el) return;
+      const box = e.target && e.target.closest && e.target.closest('[data-copy-scroll]');
+      if (box && box.scrollHeight > box.clientHeight + 1) {
+        const room = e.deltaY > 0
+          ? box.scrollHeight - box.clientHeight - box.scrollTop > 1
+          : box.scrollTop > 1;
+        if (room) return;
+      }
+      if (this._advance(e.deltaY, el.clientHeight * 15)) e.preventDefault();
+    };
+    this._onTouchStart = (e) => { this._ty = e.touches[0].clientY; };
+    this._onTouchMove = (e) => {
+      const el = this.rootRef.current;
+      if (!el || this._ty == null) return;
+      const y = e.touches[0].clientY;
+      const d = this._ty - y;
+      this._ty = y;
+      if (this._advance(d, el.clientHeight * 7)) e.preventDefault();
+    };
+    if (this.rootRef.current) {
+      const el = this.rootRef.current;
+      el.addEventListener('wheel', this._onWheel, { passive: false });
+      el.addEventListener('touchstart', this._onTouchStart, { passive: true });
+      el.addEventListener('touchmove', this._onTouchMove, { passive: false });
+    }
+
+    const root = this.rootRef.current;
+    if (root && 'IntersectionObserver' in window) {
+      this._io = new IntersectionObserver((entries) => {
+        let best = null;
+        entries.forEach((e) => { if (!best || e.intersectionRatio > best.intersectionRatio) best = e; });
+        if (best && best.isIntersecting && best.target.id !== this.state.section) {
+          this.setState({ section: best.target.id });
+        }
+      }, { root: root, threshold: [0.35, 0.6, 0.9] });
+      root.querySelectorAll('section[id]').forEach((s) => this._io.observe(s));
+    }
+  }
+
+  componentDidUpdate() {
+    // prevState is not passed in this runtime — track what was last painted instead
+    if (this._drawnPoints !== this.state.points) {
+      this._drawnPoints = this.state.points;
+      this.draw();
+    }
+  }
+
+  movePoint(i) {
+    const self = this;
+    return function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const box = self.wrapRef.current;
+      if (!box) return;
+      if (e.shiftKey) {                       // shift-click removes a point
+        if (self.state.points.length > 4) self.setState({ points: self.state.points.filter((p, k) => k !== i) });
+        return;
+      }
+      if (e.altKey) {                         // alt-click adds one just after
+        const pts = self.state.points.slice();
+        const a = pts[i], b = pts[Math.min(pts.length - 1, i + 1)];
+        pts.splice(i + 1, 0, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
+        self.setState({ points: pts });
+        return;
+      }
+      const move = function (ev) {
+        const r = box.getBoundingClientRect();
+        const pts = self.state.points.slice();
+        pts[i] = [(ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height];
+        self.setState({ points: pts });
+      };
+      const up = function () {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        self.setState({ dragging: null });
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      self.setState({ dragging: i });
+    };
+  }
+
+  copyPoints() {
+    const s = JSON.stringify(this.state.points.map((p) => [+p[0].toFixed(4), +p[1].toFixed(4)]));
+    if (navigator.clipboard) navigator.clipboard.writeText(s);
+    console.log('TRAIL POINTS', s);
+  }
+
+  resetPoints() { this.setState({ points: buildDefaultPath() }); }
+
+  componentWillUnmount() {
+    clearTimeout(this._t);
+    if (this._shootRaf) cancelAnimationFrame(this._shootRaf);
+    if (this._traf) cancelAnimationFrame(this._traf);
+    if (this.rootRef.current) {
+      const el = this.rootRef.current;
+      if (this._onWheel) el.removeEventListener('wheel', this._onWheel);
+      if (this._onTouchStart) el.removeEventListener('touchstart', this._onTouchStart);
+      if (this._onTouchMove) el.removeEventListener('touchmove', this._onTouchMove);
+    }
+    window.removeEventListener('resize', this._onResize);
+    if (this._io) this._io.disconnect();
+  }
+
+  rng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a += 0x6D2B79F5;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // one tiny shooting star roughly every 30s, random place, angle and direction
+  startShooting() {
+    const self = this;
+    this._shots = [];
+    this._nextShot = performance.now() + 1800 + Math.random() * 4000;
+    const spawn = function (w, h) {
+      const down = Math.random() < 0.72;
+      const ang = (down ? 0.28 : -0.24) + (Math.random() - 0.5) * 0.34;
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      const len = (90 + Math.random() * 110);
+      return {
+        x: w * (0.08 + Math.random() * 0.84),
+        y: h * (0.05 + Math.random() * 0.62),
+        vx: Math.cos(ang) * dir * (0.42 + Math.random() * 0.34),
+        vy: Math.sin(ang) * (0.42 + Math.random() * 0.34),
+        len: len, life: 0, span: 900 + Math.random() * 500
+      };
+    };
+    const frame = function (now) {
+      self._shootRaf = requestAnimationFrame(frame);
+      const c = self.shootRef.current;
+      if (!c) return;
+      const w = c.clientWidth || 1, h = c.clientHeight || 1;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      const ctx = c.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      if (now >= self._nextShot) {
+        self._shots.push(spawn(w, h));
+        self._nextShot = now + 12000 + Math.random() * 6000;
+      }
+      for (let i = self._shots.length - 1; i >= 0; i--) {
+        const s0 = self._shots[i];
+        s0.life += 16.7;
+        const t = s0.life / s0.span;
+        if (t >= 1) { self._shots.splice(i, 1); continue; }
+        const ease = t < 0.16 ? t / 0.16 : (1 - (t - 0.16) / 0.84);
+        const head = s0.len * 3.4 * t;
+        const hx = s0.x + s0.vx * head, hy = s0.y + s0.vy * head;
+        const tx = hx - s0.vx * s0.len, ty = hy - s0.vy * s0.len;
+        const g = ctx.createLinearGradient(tx, ty, hx, hy);
+        g.addColorStop(0, 'rgba(255,238,210,0)');
+        g.addColorStop(1, 'rgba(255,244,222,' + (0.62 * ease).toFixed(3) + ')');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.1;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(hx, hy);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,250,236,' + (0.85 * ease).toFixed(3) + ')';
+        ctx.beginPath();
+        ctx.arc(hx, hy, 1.15, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    this._shootRaf = requestAnimationFrame(frame);
+  }
+
+  fit(canvas, keep) {
+    if (!canvas) return null;
+    if (keep) { const ctx0 = canvas.getContext('2d'); return { ctx: ctx0, w: canvas.clientWidth || 1600, h: canvas.clientHeight || 900 }; }
+    const dpr = Math.max(2, Math.min(window.devicePixelRatio || 1, 3));
+    const w = canvas.clientWidth || 1600;
+    const h = canvas.clientHeight || 900;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  gauss(r) {
+    let u = 0, v = 0;
+    while (u === 0) u = r();
+    while (v === 0) v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  samplePath(norm, w, h) {
+    const p = norm.map(function (n) { return { x: n[0] * w, y: n[1] * h }; });
+    const ext = [p[0]].concat(p, [p[p.length - 1]]);
+    const pts = [];
+    const per = 90;
+    for (let i = 1; i < ext.length - 2; i++) {
+      const p0 = ext[i - 1], p1 = ext[i], p2 = ext[i + 1], p3 = ext[i + 2];
+      for (let j = 0; j < per; j++) {
+        const t = j / per, t2 = t * t, t3 = t2 * t;
+        const x = 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3);
+        const y = 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3);
+        pts.push({ x: x, y: y });
+      }
+    }
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len = Math.hypot(dx, dy) || 1;
+      pts[i].nx = -dy / len;
+      pts[i].ny = dx / len;
+    }
+    return pts;
+  }
+
+  frontWeight(bands, t) {
+    const feather = 0.035;
+    let v = 0;
+    for (let i = 0; i < bands.length; i++) {
+      const a = bands[i][0], b = bands[i][1];
+      const inA = Math.min(1, Math.max(0, (t - (a - feather)) / feather));
+      const outB = Math.min(1, Math.max(0, ((b + feather) - t) / feather));
+      v = Math.max(v, Math.min(inA, outB));
+    }
+    return v;
+  }
+
+  drawStars(canvas) {
+    const s = this.fit(canvas);
+    if (!s) return;
+    const ctx = s.ctx, w = s.w, h = s.h;
+    const r = this.rng(8123);
+    const unit = Math.max(w, 900) / 1600;
+
+    // flat black ground — the reference has no coloured wash at all
+    ctx.fillStyle = '#010101';
+    ctx.fillRect(0, 0, w, h);
+
+    // fine even film grain
+    const grainN = Math.round((w * h) / 26);
+    for (let i = 0; i < grainN; i++) {
+      const a = 0.010 + Math.pow(r(), 3) * 0.050;
+      ctx.fillStyle = 'rgba(226,226,232,' + a.toFixed(4) + ')';
+      ctx.fillRect(r() * w, r() * h, 1, 1);
+    }
+
+    // sparse stars
+    const count = Math.round(((w * h) / 5200) * (this.props.starDensity ?? 1));
+    for (let i = 0; i < count; i++) {
+      const x = r() * w, y = r() * h;
+      const m = r();
+      const rad = (m > 0.97 ? 0.7 + r() * 0.7 : 0.2 + r() * 0.45) * unit;
+      const a = 0.06 + Math.pow(r(), 2.6) * 0.62;
+      const tint = r();
+      const col = tint > 0.9 ? '255,232,210' : (tint < 0.12 ? '216,228,255' : '255,252,248');
+      ctx.fillStyle = 'rgba(' + col + ',' + a.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(x, y, rad, 0, Math.PI * 2);
+      ctx.fill();
+      if (m > 0.994) {
+        const gl = ctx.createRadialGradient(x, y, 0, x, y, rad * 7);
+        gl.addColorStop(0, 'rgba(255,250,242,0.16)');
+        gl.addColorStop(1, 'rgba(255,250,242,0)');
+        ctx.fillStyle = gl;
+        ctx.beginPath();
+        ctx.arc(x, y, rad * 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  drawTrail(backCanvas, frontCanvas, opts) {
+    const b = this.fit(backCanvas, opts.keep);
+    if (!b) return;
+    const f = frontCanvas ? this.fit(frontCanvas, opts.keep) : null;
+    const w = b.w, h = b.h;
+    const pts = this.samplePath(opts.path, w, h);
+    const N = pts.length;
+    const unit = Math.max(w, 900) / 1600;
+    const r = this.rng(opts.seed || 20260914);
+    const self = this;
+    const bands = opts.frontBands || [];
+    const thick0 = opts.thickness == null ? 1 : opts.thickness;
+    const thickEnd = opts.thicknessEnd == null ? thick0 : opts.thicknessEnd;
+    const thickAt = function (t) { return thick0 + (thickEnd - thick0) * Math.min(1, t / 0.28); };
+    const boost = (this.props.trailIntensity ?? 1) * (opts.intensity == null ? 1 : opts.intensity);
+    const iEnd = opts.intensityEnd == null ? 1 : opts.intensityEnd;
+    const ramp = function (t) {
+      const u = Math.min(1, Math.max(0, (t - 0.40) / 0.30));
+      return 1 + (iEnd - 1) * u * u * (3 - 2 * u);
+    };
+
+    const both = function (t, x, y, drawer) {
+      const fw = f ? self.frontWeight(bands, t) : 0;
+      if (fw < 0.999) drawer(b.ctx, 1 - fw);
+      if (f && fw > 0.001) drawer(f.ctx, fw);
+    };
+
+    // reference: a narrow band (roughly 10-20px) made of thousands of tiny
+    // sparkling grains — granular, never a smooth vector line.
+    const widthAt = function (t) {
+      const swell = 0.6 + 0.4 * Math.sin(t * 8.3 + 1.1) * Math.sin(t * 2.7);
+      return (2.6 + 6.4 * Math.max(0.3, swell)) * unit * thickAt(t);
+    };
+    const glowAt = function (t) {
+      return (0.45 + 0.55 * Math.pow(Math.max(0, Math.sin(t * 5.0 + 0.6)), 2)) * boost * ramp(t);
+    };
+
+    // soft warm haze bedded under the band
+    const hazeN = Math.round(700 * (opts.density == null ? 1 : opts.density));
+    for (let i = 0; i < hazeN; i++) {
+      const t = r();
+      const p = pts[Math.min(N - 1, Math.floor(t * N))];
+      const off = self.gauss(r) * widthAt(t) * 1.1;
+      const x = p.x + p.nx * off, y = p.y + p.ny * off;
+      const rad = (4 + Math.pow(r(), 1.8) * 16) * unit * thickAt(t);
+      const a = (0.01 + r() * 0.03) * glowAt(t);
+      both(t, x, y, function (ctx, k) {
+        const gl = ctx.createRadialGradient(x, y, 0, x, y, rad);
+        gl.addColorStop(0, 'rgba(216,170,112,' + (a * k).toFixed(4) + ')');
+        gl.addColorStop(1, 'rgba(216,170,112,0)');
+        ctx.fillStyle = gl;
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // the band itself: dense fine grain spread across the width
+    const grainN = Math.round(26000 * (opts.density == null ? 1 : opts.density));
+    for (let i = 0; i < grainN; i++) {
+      const t = r();
+      const p = pts[Math.min(N - 1, Math.floor(t * N))];
+      const off = self.gauss(r) * widthAt(t) * 0.85;
+      const x = p.x + p.nx * off, y = p.y + p.ny * off;
+      const rad = (0.16 + Math.pow(r(), 2.9) * 0.62) * unit;
+      const a = (0.04 + Math.pow(r(), 2.1) * 0.42) * glowAt(t);
+      const tint = r();
+      const col = tint > 0.7 ? '255,222,170' : (tint < 0.05 ? '210,205,225' : '236,190,130');
+      both(t, x, y, function (ctx, k) {
+        ctx.fillStyle = 'rgba(' + col + ',' + (a * k).toFixed(4) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // brighter granular core down the middle of the band — still grains, no stroke
+    const coreN = Math.round(11000 * (opts.density == null ? 1 : opts.density));
+    for (let i = 0; i < coreN; i++) {
+      const t = r();
+      const p = pts[Math.min(N - 1, Math.floor(t * N))];
+      const off = self.gauss(r) * widthAt(t) * 0.17;
+      const x = p.x + p.nx * off, y = p.y + p.ny * off;
+      const rad = (0.16 + Math.pow(r(), 3.2) * 0.5) * unit;
+      const a = (0.07 + Math.pow(r(), 1.7) * 0.38) * glowAt(t);
+      both(t, x, y, function (ctx, k) {
+        ctx.fillStyle = 'rgba(250,224,176,' + (a * k).toFixed(4) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // loose specks thrown wide of the band
+    const sprayN = Math.round(2600 * (opts.density == null ? 1 : opts.density));
+    for (let i = 0; i < sprayN; i++) {
+      const t = r();
+      const p = pts[Math.min(N - 1, Math.floor(t * N))];
+      const off = self.gauss(r) * widthAt(t) * 3.2;
+      const x = p.x + p.nx * off, y = p.y + p.ny * off;
+      const rad = (0.25 + Math.pow(r(), 2.4) * 0.9) * unit;
+      const a = (0.1 + Math.pow(r(), 1.6) * 0.55) * Math.min(1, glowAt(t) + 0.3);
+      both(t, x, y, function (ctx, k) {
+        ctx.fillStyle = 'rgba(236,206,160,' + (a * k).toFixed(4) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    const moons = (this.props.showMoons ?? true) ? (opts.moons || []) : [];
+    for (let i = 0; i < moons.length; i++) {
+      const t = moons[i] + (r() - 0.5) * 0.012;
+      const p = pts[Math.min(N - 1, Math.max(0, Math.floor(t * N)))];
+      const off = self.gauss(r) * widthAt(t) * 0.35;
+      const x = p.x + p.nx * off, y = p.y + p.ny * off;
+      const rad = (1.4 + Math.pow(r(), 1.6) * 2.8) * unit;
+      both(t, x, y, function (ctx, k) {
+        const gl = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.4, rad * 0.1, x, y, rad);
+        gl.addColorStop(0, 'rgba(214,204,196,' + (0.9 * k).toFixed(3) + ')');
+        gl.addColorStop(0.62, 'rgba(150,138,130,' + (0.85 * k).toFixed(3) + ')');
+        gl.addColorStop(1, 'rgba(60,54,50,' + (0.7 * k).toFixed(3) + ')');
+        ctx.fillStyle = gl;
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+        const halo = ctx.createRadialGradient(x, y, rad, x, y, rad * 5);
+        halo.addColorStop(0, 'rgba(255,228,198,' + (0.03 * k).toFixed(3) + ')');
+        halo.addColorStop(1, 'rgba(255,228,198,0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(x, y, rad * 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+  }
+
+  // the big-bang nebula, traced from the reference: a ribbon that rises from the
+  // bottom-left corner (cool blue/violet, fibrous), crests just left of centre, burns
+  // white-peach right of the crest with fine rays fanning upward, then falls away as a
+  // dimming tan tail to a second small flare at the far right that curls down and out.
+  drawNebula(canvas) {
+    const s = this.fit(canvas);
+    if (!s) return;
+    const ctx = s.ctx, w = s.w, h = s.h;
+    const unit = Math.min(Math.max(w, 900) / 1600, h / 414);
+    const r = this.rng(424242);
+    const self = this;
+
+    const pts = this.samplePath([
+      [-0.02, 1.12], [0.025, 0.99], [0.08, 0.82], [0.145, 0.66], [0.21, 0.52],
+      [0.29, 0.40], [0.37, 0.33], [0.45, 0.30], [0.53, 0.35], [0.61, 0.42],
+      [0.70, 0.50], [0.79, 0.56], [0.87, 0.575], [0.93, 0.53], [0.97, 0.64],
+      [1.0, 0.80], [1.04, 0.98]
+    ], w, h);
+    const N = pts.length;
+    const P = function (t) { return pts[Math.min(N - 1, Math.max(0, Math.floor(t * N)))]; };
+    const tangent = function (t) {
+      const i0 = Math.min(N - 2, Math.max(0, Math.floor(t * N)));
+      const dx = pts[i0 + 1].x - pts[i0].x, dy = pts[i0 + 1].y - pts[i0].y;
+      const l = Math.hypot(dx, dy) || 1;
+      return { x: dx / l, y: dy / l };
+    };
+
+    // hot core centred at t=0.55, falling off both ways; small flare at t=0.93
+    const heat = function (t) {
+      return Math.pow(Math.max(0, 1 - Math.abs(t - 0.55) / 0.2), 1.6);
+    };
+    const flare = function (t) {
+      return Math.pow(Math.max(0, 1 - Math.abs(t - 0.93) / 0.05), 1.5);
+    };
+    // half-width of the ribbon in px: broad on the left flank, tighter through the core and tail
+    const widthAt = function (t) {
+      let wpx;
+      if (t < 0.35) wpx = 60 - (t / 0.35) * 18;
+      else if (t < 0.75) wpx = 42 - ((t - 0.35) / 0.4) * 10;
+      else wpx = 36 - ((t - 0.75) / 0.25) * 6;
+      return wpx * unit;
+    };
+    // brightness envelope: dim ends, cool flank moderate, blazing core, fading tail, flare
+    const bright = function (t) {
+      const ends = t < 0.06 ? t / 0.06 : (t > 0.98 ? Math.max(0, (1.04 - t) / 0.06) : 1);
+      let base;
+      if (t < 0.38) base = 0.42 + 0.2 * (t / 0.38);
+      else if (t < 0.75) base = 0.55 - ((t - 0.38) / 0.37) * 0.2;
+      else base = 0.35 - ((t - 0.75) / 0.25) * 0.2;
+      return ends * (base + heat(t) * 1.4 + flare(t) * 0.6);
+    };
+    // colour: blue/violet with a pink dust tinge on the left, peach->white at the core,
+    // tan-orange along the tail, violet again where the far-right curl exits
+    const colAt = function (t, k) {
+      const hx = heat(t), fx = flare(t);
+      if (fx > 0.5) return k > 0.5 ? '255,242,228' : '240,200,170';
+      if (t > 0.955) return k > 0.5 ? '176,160,214' : '130,120,190';
+      if (hx > 0.7) return k > 0.45 ? '255,246,232' : '255,222,190';
+      if (hx > 0.3) return k > 0.5 ? '255,220,182' : '246,186,136';
+      if (t > 0.72) return k > 0.5 ? '232,178,132' : '200,140,102';
+      if (t > 0.38) return k > 0.5 ? '246,198,156' : '214,156,118';
+      if (t > 0.26) { const q = r(); return q < 0.4 ? '196,150,178' : (q < 0.7 ? '168,140,204' : '220,186,176'); }
+      if (t > 0.12) { const q = r(); return q < 0.45 ? '100,130,215' : (q < 0.75 ? '148,116,220' : '90,175,210'); }
+      const q = r(); return q < 0.5 ? '84,110,200' : (q < 0.8 ? '120,100,200' : '150,116,210');
+    };
+    const at = function (t, spread) {
+      const p = P(t);
+      const off = self.gauss(r) * widthAt(t) * spread;
+      return { x: p.x + p.nx * off, y: p.y + p.ny * off, off: off };
+    };
+
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+
+    // 1. soft translucent body of the ribbon (small blobs, keeps the ribbon legible)
+    for (let i = 0; i < 2600; i++) {
+      const t = r();
+      const q = at(t, 0.62);
+      const k = 1 - Math.min(1, Math.abs(q.off) / (widthAt(t) * 0.9));
+      const rad = (10 + Math.pow(r(), 1.6) * 34) * unit;
+      const a = (0.012 + r() * 0.03) * bright(t) * (0.25 + k);
+      const c = colAt(t, k);
+      const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, rad);
+      g.addColorStop(0, 'rgba(' + c + ',' + a.toFixed(4) + ')');
+      g.addColorStop(1, 'rgba(' + c + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(q.x, q.y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 1b. faint violet-pink dust drifting off the left flank (the wide translucent haze)
+    for (let i = 0; i < 380; i++) {
+      const t = 0.04 + r() * 0.34;
+      const q = at(t, 1.9);
+      const rad = (26 + Math.pow(r(), 1.5) * 80) * unit;
+      const a = 0.005 + r() * 0.014;
+      const c = r() < 0.5 ? '190,120,180' : '100,120,210';
+      const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, rad);
+      g.addColorStop(0, 'rgba(' + c + ',' + a.toFixed(4) + ')');
+      g.addColorStop(1, 'rgba(' + c + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(q.x, q.y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 2. filaments running along the ribbon — the dominant fibrous texture
+    for (let i = 0; i < 5200; i++) {
+      const t = r();
+      const q = at(t, 0.55);
+      const tg = tangent(t);
+      const run = (30 + Math.pow(r(), 1.3) * 150) * unit;
+      const k = 1 - Math.min(1, Math.abs(q.off) / (widthAt(t) * 0.8));
+      const a = (0.02 + Math.pow(r(), 1.5) * 0.085) * bright(t) * (0.3 + k);
+      ctx.strokeStyle = 'rgba(' + colAt(t, k) + ',' + a.toFixed(4) + ')';
+      ctx.lineWidth = (0.35 + Math.pow(r(), 2) * 1.3) * unit;
+      const bend = self.gauss(r) * 7 * unit;
+      ctx.beginPath();
+      ctx.moveTo(q.x - tg.x * run * 0.5, q.y - tg.y * run * 0.5);
+      ctx.quadraticCurveTo(q.x - tg.y * bend, q.y + tg.x * bend, q.x + tg.x * run * 0.5, q.y + tg.y * run * 0.5);
+      ctx.stroke();
+    }
+
+    // 3. dust grain across the ribbon
+    for (let i = 0; i < 34000; i++) {
+      const t = r();
+      const q = at(t, 0.75);
+      const k = 1 - Math.min(1, Math.abs(q.off) / (widthAt(t) * 0.9));
+      const rad = (0.18 + Math.pow(r(), 3) * 0.9) * unit;
+      const a = (0.05 + Math.pow(r(), 2.2) * 0.5) * bright(t) * (0.2 + k);
+      ctx.fillStyle = 'rgba(' + colAt(t, k) + ',' + a.toFixed(4) + ')';
+      ctx.beginPath(); ctx.arc(q.x, q.y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 4. rays fanning up and slightly right off the crest (x 0.40-0.58), thin and bright
+    for (let i = 0; i < 900; i++) {
+      const t = 0.40 + Math.pow(r(), 1.2) * 0.19;
+      const p = P(t);
+      const sx = p.x + self.gauss(r) * 14 * unit;
+      const sy = p.y - widthAt(t) * (0.1 + r() * 0.5);
+      const lift = (25 + Math.pow(r(), 2.2) * 130) * unit;
+      const lean = lift * (0.15 + r() * 0.45) * (r() < 0.15 ? -1 : 1);
+      const a = (0.01 + Math.pow(r(), 2.6) * 0.1) * (0.5 + heat(t));
+      const c = r() < 0.8 ? '255,232,200' : '255,200,160';
+      const g = ctx.createLinearGradient(sx, sy, sx + lean, sy - lift);
+      g.addColorStop(0, 'rgba(' + c + ',' + a.toFixed(4) + ')');
+      g.addColorStop(1, 'rgba(' + c + ',0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = (0.35 + Math.pow(r(), 2) * 1.4) * unit;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(sx + lean * 0.35, sy - lift * 0.55, sx + lean, sy - lift);
+      ctx.stroke();
+    }
+
+    // 5. blown-out core: soft elliptical glows along the spine right of the crest, no hard streak
+    const core = [[0.55, 340, 68, 0.22, '255,210,164'], [0.55, 210, 40, 0.42, '255,234,208'], [0.56, 120, 22, 0.6, '255,250,240']];
+    for (let i = 0; i < core.length; i++) {
+      const c = P(core[i][0]);
+      const tg = tangent(core[i][0]);
+      const rx = core[i][1] * unit, ry = core[i][2] * unit;
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(Math.atan2(tg.y, tg.x));
+      ctx.scale(rx / ry, 1);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, ry);
+      g.addColorStop(0, 'rgba(' + core[i][4] + ',' + core[i][3] + ')');
+      g.addColorStop(1, 'rgba(' + core[i][4] + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, ry, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // 6. far-right flare where the tail kicks up before curling out
+    const f = P(0.93);
+    const fl = [[110, 0.14, '255,206,166'], [40, 0.38, '255,246,236']];
+    for (let i = 0; i < fl.length; i++) {
+      const rad = fl[i][0] * unit;
+      const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, rad);
+      g.addColorStop(0, 'rgba(' + fl[i][2] + ',' + fl[i][1] + ')');
+      g.addColorStop(1, 'rgba(' + fl[i][2] + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(f.x, f.y, rad, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // 7. moonlets fixed where the reference has them: a grey one above the tail, a tiny one far left
+    const moons = [[0.81, 0.35, 15], [0.075, 0.64, 5.5]];
+    for (let i = 0; i < moons.length; i++) {
+      const x = moons[i][0] * w, y = moons[i][1] * h, rad = moons[i][2] * unit;
+      ctx.globalCompositeOperation = 'source-over';
+      const g = ctx.createRadialGradient(x - rad * 0.4, y - rad * 0.4, rad * 0.1, x, y, rad);
+      g.addColorStop(0, 'rgba(226,214,204,0.98)');
+      g.addColorStop(0.55, 'rgba(160,148,140,0.92)');
+      g.addColorStop(1, 'rgba(60,54,52,0.85)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.globalCompositeOperation = 'lighter';
+    }
+
+    // 8. soften the canvas bottom so the flank never ends on a hard edge
+    ctx.globalCompositeOperation = 'destination-out';
+    const fade = ctx.createLinearGradient(0, h * 0.7, 0, h);
+    fade.addColorStop(0, 'rgba(0,0,0,0)');
+    fade.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, h * 0.7, w, h * 0.3);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  occluders() {
+    const box = this.wrapRef.current;
+    if (!box) return [];
+    const wr = box.getBoundingClientRect();
+    const out = [];
+    const els = box.querySelectorAll('[data-occluder]');
+    for (let i = 0; i < els.length; i++) {
+      const r = els[i].getBoundingClientRect();
+      if (!r.width) continue;
+      out.push({
+        x: (r.left + r.width / 2 - wr.left) / wr.width,
+        y: (r.top + r.height / 2 - wr.top) / wr.height,
+        rx: (r.width / 2) * 0.97 / wr.width,
+        ry: (r.height / 2) * 0.97 / wr.height
+      });
+    }
+    return out;
+  }
+
+  draw() {
+    this.drawStars(this.starRef.current);
+
+    // one ribbon for the whole wrapper — Core and Explore share the same grain and weight
+    // entirely on the back canvas: the ribbon passes behind every planet
+    this.drawTrail(this.heroBackRef.current, null, {
+      seed: 20260914,
+      path: this.state.points,
+      frontBands: [],
+      thickness: 1.5,
+      density: 2.8,
+      intensity: 1.7,
+      intensityEnd: 2.1,
+      moons: [0.14, 0.22, 0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86, 0.94]
+    });
+  }
+}
+</script>
